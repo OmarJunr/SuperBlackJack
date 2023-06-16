@@ -8,12 +8,13 @@ public class Game {
 
    // CLASSES
    ActionHandler aHandler = new ActionHandler(this);
-   UI ui = new UI(this);
-   Cards cards = new Cards();
-   Random random = new Random();
-   AudioAsset aa = new AudioAsset();
-   SE se = new SE();
-   Music music = new Music();
+   UI ui 		          = new UI(this);
+   Cards cards 	          = new Cards();
+   Random random          = new Random();
+   AudioAsset aa          = new AudioAsset();
+   SE se 		          = new SE();
+   Music music 	          = new Music();
+   
 
    // CARTAS
    int pickedCardNum;
@@ -25,7 +26,8 @@ public class Game {
    int dealerCardValue[] = new int[6];
    int playerTotalValue;
    int dealerTotalValue;
-
+   Verify verify          = new Verify(playerCardValue, playerCardNum, dealerCardValue, dealerCardNum);
+   
    // OUTROS
    String situation = "";
    ImageIcon dealerSecondCard;
@@ -90,7 +92,7 @@ public class Game {
       ui.dealerCardLabel[dealerHas].setVisible(true);
       ui.dealerCardLabel[dealerHas].setIcon(pickedCard);
       
-      dealerTotalValue = dealerTotalValue();
+      dealerTotalValue = verify.dealerTotalValue();
       ui.dealerScore.setText("Dealer: " + dealerTotalValue);
    }
 
@@ -106,7 +108,7 @@ public class Game {
       ui.playerCardLabel[playerHas].setVisible(true);
       ui.playerCardLabel[playerHas].setIcon(pickedCard);
 
-      playerTotalValue = playerTotalValue();
+      playerTotalValue = verify.playerTotalValue();
       ui.playerScore.setText("Você: " + playerTotalValue);
    }
 
@@ -249,50 +251,6 @@ public class Game {
 
       removeButtons();
       startGame();
-   }
-
-   public int playerTotalValue() {
-      playerTotalValue = playerCardValue[1] + playerCardValue[2] + playerCardValue[3] + playerCardValue[4] + playerCardValue[5];
-
-      if(playerTotalValue > 21) {
-         adjustPlayerAceValue();
-      }
-      playerTotalValue = playerCardValue[1] + playerCardValue[2] + playerCardValue[3] + playerCardValue[4] + playerCardValue[5];
-      return playerTotalValue;
-   }
-
-   public int dealerTotalValue() {
-      dealerTotalValue = dealerCardValue[1] + dealerCardValue[2] + dealerCardValue[3] + dealerCardValue[4] + dealerCardValue[5];
-
-      if(dealerTotalValue > 21) {
-         adjustDealerAceValue();
-      }
-      dealerTotalValue = dealerCardValue[1] + dealerCardValue[2] + dealerCardValue[3] + dealerCardValue[4] + dealerCardValue[5];
-      return dealerTotalValue;
-   }
-
-   public void adjustPlayerAceValue() {
-      for(int i=1; i<6; i++) {
-         if(playerCardNum[i]==1) {
-            playerCardValue[i]=1;
-            playerTotalValue = playerCardValue[1] + playerCardValue[2] + playerCardValue[3] + playerCardValue[4] + playerCardValue[5];
-            if(playerTotalValue < 21) {
-               break;
-            }
-         }
-      }
-   }
-
-   public void adjustDealerAceValue() {
-      for(int i=1; i<6; i++) {
-         if(dealerCardNum[i]==1) {
-            dealerCardValue[i]=1;
-            dealerTotalValue = dealerCardValue[1] + dealerCardValue[2] + dealerCardValue[3] + dealerCardValue[4] + dealerCardValue[5];
-            if(dealerTotalValue < 21) {
-               break;
-            }
-         }
-      }
    }
 
    public ImageIcon pickRandomCard() {
