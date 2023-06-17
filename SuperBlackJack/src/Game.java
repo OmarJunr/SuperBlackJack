@@ -182,7 +182,7 @@ public class Game {
       lblDealer = new JLabel("Dealer");
       lblDealer.setForeground(Color.WHITE);
       lblDealer.setFont(new Font("Arial Black", Font.BOLD, 20));
-      lblDealer.setBounds(415, 70, 82, 28);
+      lblDealer.setBounds(415, 76, 82, 28);
       frame.getContentPane().add(lblDealer);
 
       lblJogador = new JLabel("Você");
@@ -447,7 +447,7 @@ public class Game {
          frame.getContentPane().remove(playerCardPainel);
       }
       // Criar e exibir dois painéis
-      dealerCardPainel = new CardGroupPanel(dealerCards, 420 - (dealerCards.getCount() * 40), 100, 70, 104, 10);
+      dealerCardPainel = new CardGroupPanel(dealerCards, 420 - (dealerCards.getCount() * 40), 110, 70, 104, 10);
       frame.getContentPane().add(dealerCardPainel);
       playerCardPainel = new CardGroupPanel(playerCards, 420 - (playerCards.getCount() * 40), 300, 70, 104, 10);
       frame.getContentPane().add(playerCardPainel);
