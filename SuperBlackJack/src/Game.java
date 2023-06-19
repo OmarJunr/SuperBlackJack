@@ -3,8 +3,6 @@ import javax.swing.*;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Random;
 import java.awt.event.ActionListener;
 import java.net.URL;
 import java.awt.event.ActionEvent;
@@ -31,8 +29,9 @@ public class Game {
    private static JButton btnNovoJogo;
    private static JButton btnSair;
    private static JButton btnDeal;
-   private static JButton btnComprar;
+   private static JButton btnPegar;
    private static JButton btnManter;
+   private static JButton btnDobrar;
    private static JButton btnContinuar;
 
    //Labels da tela 
@@ -139,7 +138,7 @@ public class Game {
       btnDeal.setBounds(679, 610, 200, 50);
       btnDeal.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e) {
-            deal();
+            apostar();
          }
       });
       frame.getContentPane().add(btnDeal);
@@ -149,7 +148,7 @@ public class Game {
 
    }
 
-   public static void deal() {
+   public static void apostar() {
 
       if (lblShuffleInfo != null)
          frame.getContentPane().remove(lblShuffleInfo);
@@ -160,7 +159,7 @@ public class Game {
       if (isValidAmount(tfVlrAposta.getText()) == true) {
          betAmount = Integer.parseInt(tfVlrAposta.getText());
       } else {
-         lblInfo.setText("Erro: A aposta deve ser um número natural!");
+         lblInfo.setText("Erro: Insira um número natural!");
          tfVlrAposta.requestFocus();
          return;
       }
@@ -177,7 +176,7 @@ public class Game {
       tfVlrAposta.setEnabled(false);
       btnDeal.setEnabled(false);
 
-      lblInfo.setText("Deseja: Comprar ou Manter?");
+      lblInfo.setText("Deseja: Pegar, Manter ou Dobrar?");
 
       lblDealer = new JLabel("Dealer");
       lblDealer.setForeground(Color.WHITE);
@@ -191,24 +190,33 @@ public class Game {
       lblJogador.setBounds(415, 266, 100, 28);
       frame.getContentPane().add(lblJogador);
 
-      btnComprar = new JButton("Comprar");
-      btnComprar.setBounds(290, 515, 140, 35);
-      btnComprar.addActionListener(new ActionListener() {
+      btnPegar = new JButton("Pegar");
+      btnPegar.setBounds(290, 515, 100, 35);
+      btnPegar.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e) {
-            hit();
+            pegar();
          }
       });
-      frame.getContentPane().add(btnComprar);
-      btnComprar.requestFocus();
+      frame.getContentPane().add(btnPegar);
+      btnPegar.requestFocus();
 
       btnManter = new JButton("Manter");
-      btnManter.setBounds(470, 515, 140, 35);
+      btnManter.setBounds(400, 515, 100, 35);
       btnManter.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e) {
-            stand();
+            manter();
          }
       });
       frame.getContentPane().add(btnManter);
+
+      btnDobrar = new JButton("Dobrar");
+      btnDobrar.setBounds(510, 515, 100, 35);
+      btnDobrar.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent e) {
+              dobrar();
+          }
+      });
+      frame.getContentPane().add(btnDobrar);
 
       btnContinuar = new JButton("Continuar");
       btnContinuar.setEnabled(false);
@@ -254,7 +262,7 @@ public class Game {
 
    }
 
-   public static void hit() {
+   public static void pegar() {
 
       playerCards.cards.add(deck.takeCard());
       playSE(aa.cardSound01);
@@ -300,7 +308,26 @@ public class Game {
 
    }
 
-   public static void stand() {
+   public static void dobrar() {
+	    if (saldo < betAmount) {
+	        lblInfo.setText("Erro: Saldo insuficiente para dobrar!");
+	        return;
+	    }
+	    saldo -= betAmount;
+	    betAmount *= 2;
+	    //saldo -= betAmount;
+
+	    lblVlrAposta.setText("$" + betAmount);
+	    lblVlrSaldo.setText(String.format("$%.2f", saldo));
+
+	    pegar();
+
+	    if (!simpleOutcomes()) {
+	        manter();
+	    }
+	}
+
+   public static void manter() {
       if (simpleOutcomes())
          return;
 
@@ -353,8 +380,10 @@ public class Game {
 
    public static void outcomeHappened() {
 
-      btnComprar.setEnabled(false);
+      btnPegar.setEnabled(false);
       btnManter.setEnabled(false);
+      btnDobrar.setEnabled(false);
+      
 
       lblInfo.setOpaque(true);
       lblInfo.setForeground(Color.RED);
@@ -375,8 +404,9 @@ public class Game {
 
       frame.getContentPane().remove(lblDealer);
       frame.getContentPane().remove(lblJogador);
-      frame.getContentPane().remove(btnComprar);
+      frame.getContentPane().remove(btnPegar);
       frame.getContentPane().remove(btnManter);
+      frame.getContentPane().remove(btnDobrar);
       frame.getContentPane().remove(lblVlrAposta);
       frame.getContentPane().remove(lblVlrApostaDesc);
       frame.getContentPane().remove(btnContinuar);
