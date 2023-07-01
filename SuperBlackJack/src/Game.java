@@ -17,7 +17,9 @@ public class Game {
    private static CardGroup deck, dealerCards, playerCards; //Declarando Variáveis:
    private static CardGroupPanel dealerCardPainel = null, playerCardPainel = null;
    private static Cards dealerHiddenCard;
+   private static Timer countdownTimer;
 
+   private static int timeRemaining = 60;
    private static double saldo = 0.0;
    private static int betAmount = 0, roundCount = 0;
 
@@ -44,6 +46,7 @@ public class Game {
    private static JLabel lblVlrAposta;
    private static JLabel lblVlrApostaDesc;
    private static JLabel lblInfo;
+   private static JLabel lblTimer;
    private static JLabel lblShuffleInfo = null;
    
    public static boolean isValidAmount(String s) {
@@ -176,6 +179,11 @@ public class Game {
       tfVlrAposta.setEnabled(false);
       btnDeal.setEnabled(false);
 
+      if (countdownTimer != null) {
+          countdownTimer.cancel();
+       }
+      startCountdown();
+
       lblInfo.setText("Deseja: Pegar, Manter ou Dobrar?");
 
       lblDealer = new JLabel("Dealer");
@@ -228,6 +236,12 @@ public class Game {
          }
       });
       frame.getContentPane().add(btnContinuar);
+
+      lblTimer = new JLabel("1:00");
+      lblTimer.setFont(new Font("Arial", Font.BOLD, 20));
+      lblTimer.setForeground(Color.WHITE);
+      lblTimer.setBounds(10, 10, 60, 16);
+      frame.getContentPane().add(lblTimer);
 
       lblVlrAposta = new JLabel();
       lblVlrAposta.setText("$" + betAmount);
@@ -304,6 +318,9 @@ public class Game {
          outcomeHasHappened = true;
          outcomeHappened();
       }
+      countdownTimer.cancel();
+      resetCountdown();
+      startCountdown();
       return outcomeHasHappened;
 
    }
@@ -315,7 +332,6 @@ public class Game {
 	    }
 	    saldo -= betAmount;
 	    betAmount *= 2;
-	    //saldo -= betAmount;
 
 	    lblVlrAposta.setText("$" + betAmount);
 	    lblVlrSaldo.setText(String.format("$%.2f", saldo));
@@ -383,6 +399,10 @@ public class Game {
       btnPegar.setEnabled(false);
       btnManter.setEnabled(false);
       btnDobrar.setEnabled(false);
+      lblTimer.setVisible(false);
+      countdownTimer.cancel();
+      //resetCountdown();
+      //startCountdown();
       
 
       lblInfo.setOpaque(true);
@@ -398,7 +418,9 @@ public class Game {
    }
 
    public static void acceptOutcome() {
-
+      if (countdownTimer != null) {
+         countdownTimer.cancel();
+      }
       lblInfo.setOpaque(false);
       lblInfo.setForeground(Color.ORANGE);
 
@@ -446,6 +468,31 @@ public class Game {
 
          roundCount = 0;
       }
+   }
+
+   public static void startCountdown() {
+       countdownTimer = new Timer();
+       countdownTimer.scheduleAtFixedRate(new TimerTask() {
+           @Override
+           public void run() {
+               timeRemaining--;
+
+               if (timeRemaining <= 0) {
+                   countdownTimer.cancel();
+                   manter();
+               }
+
+               int minutes = timeRemaining / 60;
+               int seconds = timeRemaining % 60;
+
+               String timerText = String.format("%d:%02d", minutes, seconds);
+               lblTimer.setText(timerText);
+           }
+       }, 0, 1000);
+   }
+
+   public static void resetCountdown() {
+       timeRemaining = 60;
    }
 
    public static void startGame() {
