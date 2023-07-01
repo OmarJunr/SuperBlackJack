@@ -16,12 +16,11 @@ public class Game {
    private static Music music   = new Music();
    private static CardGroup deck, dealerCards, playerCards; //Declarando Variáveis:
    private static CardGroupPanel dealerCardPainel = null, playerCardPainel = null;
-   private static Cards dealerHiddenCard;
+   private static Cards dealerCartaOculta;
    private static Timer countdownTimer;
 
-   private static int timeRemaining = 60;
    private static double saldo = 0.0;
-   private static int betAmount = 0, roundCount = 0;
+   private static int qtdApostada = 0, roundCount = 0, timeRemaining = 60;
 
    // Criando os elementos da interface no WindowBuilder
    private static JTextField tfSaldo;
@@ -30,7 +29,7 @@ public class Game {
    // Botões da Tela
    private static JButton btnNovoJogo;
    private static JButton btnSair;
-   private static JButton btnDeal;
+   private static JButton btnApostar;
    private static JButton btnPegar;
    private static JButton btnManter;
    private static JButton btnDobrar;
@@ -64,7 +63,7 @@ public class Game {
       btnNovoJogo = new JButton("Novo Jogo");
       btnNovoJogo.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e) {
-        	playMusic(aa.bgm);
+           playMusic(aa.bgm);
 
             startGame();
          }
@@ -137,15 +136,15 @@ public class Game {
       lblInserirAposta.setBounds(680, 586, 150, 16);
       frame.getContentPane().add(lblInserirAposta);
 
-      btnDeal = new JButton("Apostar");
-      btnDeal.setBounds(679, 610, 200, 50);
-      btnDeal.addActionListener(new ActionListener() {
+      btnApostar = new JButton("Apostar");
+      btnApostar.setBounds(679, 610, 200, 50);
+      btnApostar.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e) {
             apostar();
          }
       });
-      frame.getContentPane().add(btnDeal);
-      btnDeal.requestFocus();
+      frame.getContentPane().add(btnApostar);
+      btnApostar.requestFocus();
 
       frame.repaint();
 
@@ -160,24 +159,24 @@ public class Game {
       playerCards = new CardGroup();
 
       if (isValidAmount(tfVlrAposta.getText()) == true) {
-         betAmount = Integer.parseInt(tfVlrAposta.getText());
+         qtdApostada = Integer.parseInt(tfVlrAposta.getText());
       } else {
          lblInfo.setText("Erro: Insira um número natural!");
          tfVlrAposta.requestFocus();
          return;
       }
 
-      if (betAmount > saldo) {
+      if (qtdApostada > saldo) {
          lblInfo.setText("Erro: Apostou mais do que o saldo!");
          tfVlrAposta.requestFocus();
          return;
       }
-      saldo -= betAmount;
+      saldo -= qtdApostada;
 
       lblVlrSaldo.setText(String.format("$%.2f", saldo));
 
       tfVlrAposta.setEnabled(false);
-      btnDeal.setEnabled(false);
+      btnApostar.setEnabled(false);
 
       if (countdownTimer != null) {
           countdownTimer.cancel();
@@ -232,7 +231,7 @@ public class Game {
       btnContinuar.setBounds(290, 444, 320, 35);
       btnContinuar.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent e) {
-            acceptOutcome();
+            aceitarResultado();
          }
       });
       frame.getContentPane().add(btnContinuar);
@@ -244,7 +243,7 @@ public class Game {
       frame.getContentPane().add(lblTimer);
 
       lblVlrAposta = new JLabel();
-      lblVlrAposta.setText("$" + betAmount);
+      lblVlrAposta.setText("$" + qtdApostada);
       lblVlrAposta.setHorizontalAlignment(SwingConstants.CENTER);
       lblVlrAposta.setForeground(Color.ORANGE);
       lblVlrAposta.setFont(new Font("Arial", Font.BOLD, 40));
@@ -260,7 +259,7 @@ public class Game {
 
       frame.repaint();
 
-      dealerHiddenCard = deck.takeCard();
+      dealerCartaOculta = deck.takeCard();
       playSE(aa.cardSound01);
       dealerCards.cards.add(new Cards("", "", 0));
       dealerCards.cards.add(deck.takeCard());
@@ -272,7 +271,7 @@ public class Game {
       playSE(aa.cardSound01);
 
       updateCardPanels();
-      simpleOutcomes();
+      verificaSimples();
 
    }
 
@@ -282,11 +281,11 @@ public class Game {
       playSE(aa.cardSound01);
       updateCardPanels();
 
-      simpleOutcomes();
+      verificaSimples();
 
    }
 
-   public static boolean simpleOutcomes() {
+   public static boolean verificaSimples() {
       boolean outcomeHasHappened = false;
       int playerScore = playerCards.getTotalValue();
       if (playerScore > 21 && playerCards.getNumAces() > 0)
@@ -294,29 +293,29 @@ public class Game {
 
       if (playerScore == 21) {
 
-         dealerCards.cards.set(0, dealerHiddenCard);
+         dealerCards.cards.set(0, dealerCartaOculta);
          updateCardPanels();
          if (dealerCards.getTotalValue() == 21) {
             playSE(aa.draw);
             lblInfo.setText("Empate!");
-            saldo += betAmount;
+            saldo += qtdApostada;
          } else {
             playSE(aa.youwon);
-            lblInfo.setText(String.format("Você tem o Blackjack! Lucro: $%.2f", 1.5f * betAmount));
-            saldo += 2.5f * betAmount;
+            lblInfo.setText(String.format("Você tem o Blackjack! Lucro: $%.2f", 1.5f * qtdApostada));
+            saldo += 2.5f * qtdApostada;
          }
          lblVlrSaldo.setText(String.format("$%.2f", saldo));
 
          outcomeHasHappened = true;
-         outcomeHappened();
+         resultadoAconteceu();
 
       } else if (playerScore > 21) {
          playSE(aa.youlost);
-         lblInfo.setText("Você Perdeu! Perda: $" + betAmount);
-         dealerCards.cards.set(0, dealerHiddenCard);
+         lblInfo.setText("Você Perdeu! Perda: $" + qtdApostada);
+         dealerCards.cards.set(0, dealerCartaOculta);
          updateCardPanels();
          outcomeHasHappened = true;
-         outcomeHappened();
+         resultadoAconteceu();
       }
       countdownTimer.cancel();
       resetCountdown();
@@ -326,32 +325,32 @@ public class Game {
    }
 
    public static void dobrar() {
-	    if (saldo < betAmount) {
-	        lblInfo.setText("Erro: Saldo insuficiente para dobrar!");
-	        return;
-	    }
-	    saldo -= betAmount;
-	    betAmount *= 2;
+      if (saldo < qtdApostada) {
+         lblInfo.setText("Erro: Saldo insuficiente para dobrar!");
+         return;
+      }
+      saldo -= qtdApostada;
+      qtdApostada *= 2;
 
-	    lblVlrAposta.setText("$" + betAmount);
-	    lblVlrSaldo.setText(String.format("$%.2f", saldo));
+      lblVlrAposta.setText("$" + qtdApostada);
+      lblVlrSaldo.setText(String.format("$%.2f", saldo));
 
-	    pegar();
+      pegar();
 
-	    if (!simpleOutcomes()) {
-	        manter();
-	    }
-	}
+      if (!verificaSimples()) {
+         manter();
+      }
+   }
 
    public static void manter() {
-      if (simpleOutcomes())
+      if (verificaSimples())
          return;
 
       int playerScore = playerCards.getTotalValue();
       if (playerScore > 21 && playerCards.getNumAces() > 0)
          playerScore -= 10;
 
-      dealerCards.cards.set(0, dealerHiddenCard);
+      dealerCards.cards.set(0, dealerCartaOculta);
 
       int dealerScore = dealerCards.getTotalValue();
 
@@ -367,43 +366,40 @@ public class Game {
 
       if (playerScore > dealerScore) {
          playSE(aa.youwon);
-         lblInfo.setText("Você Ganhou! Lucro: $" + betAmount);
-         saldo += betAmount * 2;
+         lblInfo.setText("Você Ganhou! Lucro: $" + qtdApostada);
+         saldo += qtdApostada * 2;
          lblVlrSaldo.setText(String.format("$%.2f", saldo));
 
       } else if (dealerScore == 21) {
          playSE(aa.youlost);
-         lblInfo.setText("Dealer tem o Blackjack! Perda: $" + betAmount);
+         lblInfo.setText("Dealer tem o Blackjack! Perda: $" + qtdApostada);
 
       } else if (dealerScore > 21) {
          playSE(aa.youwon);
-         lblInfo.setText("Dealer Perdeu! Lucro: $" + betAmount);
-         saldo += betAmount * 2;
+         lblInfo.setText("Dealer Perdeu! Lucro: $" + qtdApostada);
+         saldo += qtdApostada * 2;
          lblVlrSaldo.setText(String.format("$%.2f", saldo));
       } else if (playerScore == dealerScore) {
          playSE(aa.draw);
          lblInfo.setText("Empate!");
-         saldo += betAmount;
+         saldo += qtdApostada;
          lblVlrSaldo.setText(String.format("$%.2f", saldo));
       } else {
          playSE(aa.youlost);
-         lblInfo.setText("Dealer Ganhou! Perda: $" + betAmount);
+         lblInfo.setText("Dealer Ganhou! Perda: $" + qtdApostada);
       }
 
-      outcomeHappened();
+      resultadoAconteceu();
 
    }
 
-   public static void outcomeHappened() {
+   public static void resultadoAconteceu() {
 
       btnPegar.setEnabled(false);
       btnManter.setEnabled(false);
       btnDobrar.setEnabled(false);
       lblTimer.setVisible(false);
       countdownTimer.cancel();
-      //resetCountdown();
-      //startCountdown();
-      
 
       lblInfo.setOpaque(true);
       lblInfo.setForeground(Color.RED);
@@ -417,7 +413,7 @@ public class Game {
       }, 500);
    }
 
-   public static void acceptOutcome() {
+   public static void aceitarResultado() {
       if (countdownTimer != null) {
          countdownTimer.cancel();
       }
@@ -436,8 +432,8 @@ public class Game {
       frame.getContentPane().remove(playerCardPainel);
       lblInfo.setText("Insira um valor e clique em Aposta");
       tfVlrAposta.setEnabled(true);
-      btnDeal.setEnabled(true);
-      btnDeal.requestFocus();
+      btnApostar.setEnabled(true);
+      btnApostar.requestFocus();
       frame.repaint();
 
       if (saldo <= 0) {
@@ -471,24 +467,24 @@ public class Game {
    }
 
    public static void startCountdown() {
-       countdownTimer = new Timer();
-       countdownTimer.scheduleAtFixedRate(new TimerTask() {
-           @Override
-           public void run() {
-               timeRemaining--;
+      countdownTimer = new Timer();
+      countdownTimer.scheduleAtFixedRate(new TimerTask() {
+         @Override
+         public void run() {
+            timeRemaining--;
 
-               if (timeRemaining <= 0) {
-                   countdownTimer.cancel();
-                   manter();
-               }
+            if (timeRemaining <= 0) {
+               countdownTimer.cancel();
+               manter();
+            }
 
-               int minutes = timeRemaining / 60;
-               int seconds = timeRemaining % 60;
+            int minutes = timeRemaining / 60;
+            int seconds = timeRemaining % 60;
 
-               String timerText = String.format("%d:%02d", minutes, seconds);
-               lblTimer.setText(timerText);
-           }
-       }, 0, 1000);
+            String timerText = String.format("%d:%02d", minutes, seconds);
+            lblTimer.setText(timerText);
+         }
+      }, 0, 1000);
    }
 
    public static void resetCountdown() {
